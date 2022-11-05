@@ -1,6 +1,6 @@
 import { Box, Button, ButtonGroup, Flex, HStack, IconButton, Input, SkeletonText, Text } from '@chakra-ui/react'
 import { FaLocationArrow, FaTimes } from 'react-icons/fa'
-import { useJsApiLoader, GoogleMap, Marker, Autocomplete, DirectionsRenderer } from '@react-google-maps/api'
+import { useJsApiLoader, GoogleMap, Marker, Autocomplete, DirectionsRenderer, Circle } from '@react-google-maps/api'
 import { useRef, useState } from 'react'
 // Starting position
 const center = { lat: 43.6607388, lng: -79.3988062 }
@@ -14,6 +14,8 @@ function App() {
 
   const [map, setMap] = useState(/** @type google.maps.Map */ (null))
   const [directionsResponse, setDirectionsResponse] = useState(null)
+  const [markersList, setMarkersList] = useState([])
+  const [circles, setCircles] = useState([])
   // Note: directionsResponse is recorded, but not rendered when we execute the calculateRoute().
   // Needs directionsRenderer is used to render route between destinations
   const [distance, setDistance] = useState('')
