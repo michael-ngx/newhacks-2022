@@ -102,18 +102,12 @@ function App() {
           {directionsResponse && (
             <DirectionsRenderer directions={directionsResponse} />
           )}
+          <div>{markersList}{circles}</div>
         </GoogleMap>
       </Box>
 
         <Box //The input box from here
-          p={4}
-          borderRadius='lg'
-          m={4}
-          bgColor='white'
-          shadow='base'
-          minW='container.md'
-          zIndex='1'
-        >
+          p={4} borderRadius='lg' m={4} bgColor='white' shadow='base' minW='container.md' zIndex='1' >
           
           <HStack spacing={2} justifyContent='space-between'>
             <Box flexGrow={1}>
@@ -148,11 +142,9 @@ function App() {
             </ButtonGroup>
           </HStack>
           <HStack spacing={4} mt={4} justifyContent='space-between'>
-            //distance and duration is being displayed here
-{/*             
-            <Text>Distance: {distance} </Text>
+            {/* Display distance and duration */}
+            {/* <Text>Distance: {distance} </Text>
             <Text>Duration: {duration} </Text> */}
-            
           </HStack>
         </Box>
       </Flex>
