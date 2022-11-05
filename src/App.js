@@ -1,128 +1,107 @@
-import {
-    Box,
-    Button,
-    ButtonGroup,
-    Flex,
-    HStack,
-    IconButton,
-    Input,
-    SkeletonText,
-    Text,
-  } from '@chakra-ui/react'
-  import { FaLocationArrow, FaTimes } from 'react-icons/fa'
-  
-  import {
-    useJsApiLoader,
-    GoogleMap,
-    Marker,
-    Autocomplete,
-    DirectionsRenderer,
-    Circle,
-  } from '@react-google-maps/api'
-  import { useRef, useState } from 'react'
-  const center = { lat: 43.6607388, lng: -79.3988062 }  //TODO: customize to current location
-  
-  function App() {
-    const { isLoaded } = useJsApiLoader({
-      googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
-      libraries: ['places'],
-    })
-  
-    const [map, setMap] = useState(/** @type google.maps.Map */ (null)) //KEEP
-    const [directionsResponse, setDirectionsResponse] = useState(null) //KEEP
+import { Box, Button, ButtonGroup, Flex, HStack, IconButton, Input, SkeletonText, Text } from '@chakra-ui/react'
+import { FaLocationArrow, FaTimes } from 'react-icons/fa'
+import { useJsApiLoader, GoogleMap, Marker, Autocomplete, DirectionsRenderer } from '@react-google-maps/api'
+import { useRef, useState } from 'react'
+// Starting position
+const center = { lat: 43.6607388, lng: -79.3988062 }
 
-    const [markersList, setMarkersList] = useState([])
-    const [circles, setCircles] = useState([])
-    /*
-    note: directionsResponse is recorded, but not actually rendered when we execute the calculateRoute() function
-    we need to import directionsRenderer to render it
-    */
 
-    //maybe deprecate?
-    const [distance, setDistance] = useState('')
-    const [duration, setDuration] = useState('')
-  
-    /** @type React.MutableRefObject<HTMLInputElement> */
-    const originRef = useRef()
-    /** @type React.MutableRefObject<HTMLInputElement> */
-    const destiantionRef = useRef()
-    if (!isLoaded) {
-      return <p>Loading...</p>
+function App() {
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+    libraries: ['places'],
+  })
+
+  const [map, setMap] = useState(/** @type google.maps.Map */ (null))
+  const [directionsResponse, setDirectionsResponse] = useState(null)
+  // Note: directionsResponse is recorded, but not rendered when we execute the calculateRoute().
+  // Needs directionsRenderer is used to render route between destinations
+  const [distance, setDistance] = useState('')
+  const [duration, setDuration] = useState('')
+
+  /** @type React.MutableRefObject<HTMLInputElement> */
+  const originRef = useRef()
+  /** @type React.MutableRefObject<HTMLInputElement> */
+  const destiantionRef = useRef()
+
+  // Loading screen
+  if (!isLoaded) {
+    return <p>Loading...</p>
+  }
+
+  // Calculate routes between origin & destination
+  async function calculateRoute() {
+    if (originRef.current.value === '' || destiantionRef.current.value === '') {
+      return
     }
-  
-    async function calculateRoute() {
-      if (originRef.current.value === '' || destiantionRef.current.value === '') {
-        return
-      }
+    // eslint-disable-next-line no-undef
+    const directionsService = new google.maps.DirectionsService()
+    const results = await directionsService.route({
+      origin: originRef.current.value,
+      destination: destiantionRef.current.value,
       // eslint-disable-next-line no-undef
-      const directionsService = new google.maps.DirectionsService()
-      const results = await directionsService.route({
-        origin: originRef.current.value,
-        destination: destiantionRef.current.value,
-        // eslint-disable-next-line no-undef
-        travelMode: google.maps.TravelMode.DRIVING,
-      })
-      setDirectionsResponse(results)
-      setDistance(results.routes[0].legs[0].distance.text) //TODO secondary: route[0] is fastest, but is it free?
-      setDuration(results.routes[0].legs[0].duration.text)
+      travelMode: google.maps.TravelMode.DRIVING,
+    })
+    setDirectionsResponse(results)
+    setDistance(results.routes[0].legs[0].distance.text) //TODO secondary: route[0] is fastest, but is it free?
+    setDuration(results.routes[0].legs[0].duration.text)
+    
+    const leg = results.routes[0].legs[0]
 
-      const leg = results.routes[0].legs[0]
-
-      for(let j = 0; j < leg.steps.length; j++){
-        let skip = Math.ceil(leg.steps[j].path.length / 5)
-        for(let i = 0; i < leg.steps[j].path.length; i+=skip){
-          const coords = { 
-            lat: leg.steps[j].path[i].lat(),
-            lng: leg.steps[j].path[i].lng()
-          }
-          setMarkersList( (prev) => ([...prev, <Marker position={coords}/>]))
-
-          
-          setCircles( (prev) => ([...prev, <Circle center={coords} radius ={5000} 
-            options={ {strokeOpacity: 0.3, strokeWeight: 1, fillColor: '#FF0000', strokeColor: '#FF0000', fillOpacity: 0.3}}/>]));
-          
+    for(let j = 0; j < leg.steps.length; j++){
+      let skip = Math.ceil(leg.steps[j].path.length / 5)
+      for(let i = 0; i < leg.steps[j].path.length; i+=skip){
+        const coords = { 
+          lat: leg.steps[j].path[i].lat(),
+          lng: leg.steps[j].path[i].lng()
         }
+        setMarkersList( (prev) => ([...prev, <Marker position={coords}/>]))
+
+        
+        setCircles( (prev) => ([...prev, <Circle center={coords} radius ={5000} 
+          options={ {strokeOpacity: 0.3, strokeWeight: 1, fillColor: '#FF0000', strokeColor: '#FF0000', fillOpacity: 0.3}}/>]));
+        
       }
     }
-  
-    function clearRoute() {
-      setDirectionsResponse(null)
-      setDistance('')
-      setDuration('')
-      originRef.current.value = ''
-      destiantionRef.current.value = ''
-    }
-  
-    return (
-      <Flex
-        position='relative'
-        flexDirection='column'
-        alignItems='center'
-        h='100vh'
-        w='100vw'
-      >
-        <Box position='absolute' left={0} top={0} h='100%' w='100%'>
-          {/* Google Map Box */}
-          <GoogleMap
-            center={center} //TODO: customize
-            zoom={15}
-            mapContainerStyle={{ width: '100%', height: '100%' }}
-            options={{
-              zoomControl: false,
-              streetViewControl: false,
-              mapTypeControl: false,
-              fullscreenControl: false,
-            }}
-            onLoad={map => setMap(map)}
-          >
-            {/* <Marker position={center} /> //Todo: use a loop to display all markers for hotels, attractions, etc. */}
-            {directionsResponse && (
-              <DirectionsRenderer directions={directionsResponse} />
-            )}
-            <div>{markersList}</div>
-            <div>{circles}</div>
-          </GoogleMap>
-        </Box>
+  }
+
+  // Clear Route when pressed X button
+  function clearRoute() {
+    setDirectionsResponse(null)
+    setDistance('')
+    setDuration('')
+    originRef.current.value = ''
+    destiantionRef.current.value = ''
+  }
+
+  // *******************************************************************************
+  // *******************************************************************************
+  // Rendering
+  // *******************************************************************************
+  // *******************************************************************************
+
+  return (
+    <Flex position='relative' flexDirection='column' alignItems='center' h='100vh' w='100vw' >
+      <Box position='absolute' left={0} top={0} h='100%' w='100%'>
+        {/* Google Map Box */}
+        <GoogleMap
+          center={center}
+          zoom={15}
+          mapContainerStyle={{ width: '100%', height: '100%' }}
+          options={{
+            zoomControl: false,
+            streetViewControl: false,
+            mapTypeControl: false,
+            fullscreenControl: false,
+          }}
+          onLoad={map => setMap(map)}
+        >
+          {/* <Marker position={center} /> //Todo: use a loop to display all markers for hotels, attractions, etc. */}
+          {directionsResponse && (
+            <DirectionsRenderer directions={directionsResponse} />
+          )}
+        </GoogleMap>
+      </Box>
 
         <Box //The input box from here
           p={4}
