@@ -19,8 +19,7 @@ import {
     DirectionsRenderer,
   } from '@react-google-maps/api'
   import { useRef, useState } from 'react'
-  
-  const center = { lat: 48.8584, lng: 2.2945 }  //TODO: customize to Toronto (default)
+  const center = { lat: 43.6607388, lng: -79.3988062 }  //TODO: customize to Toronto (default)
   
   function App() {
     const { isLoaded } = useJsApiLoader({
@@ -28,8 +27,14 @@ import {
       libraries: ['places'],
     })
   
-    const [map, setMap] = useState(/** @type google.maps.Map */ (null))
-    const [directionsResponse, setDirectionsResponse] = useState(null)
+    const [map, setMap] = useState(/** @type google.maps.Map */ (null)) //KEEP
+    const [directionsResponse, setDirectionsResponse] = useState(null) //KEEP
+    /*
+    note: directionsResponse is recorded, but not actually rendered when we execute the calculateRoute() function
+    we need to import directionsRenderer to render it
+    */
+
+    //maybe deprecate?
     const [distance, setDistance] = useState('')
     const [duration, setDuration] = useState('')
   
@@ -55,7 +60,7 @@ import {
         travelMode: google.maps.TravelMode.DRIVING,
       })
       setDirectionsResponse(results)
-      setDistance(results.routes[0].legs[0].distance.text)
+      setDistance(results.routes[0].legs[0].distance.text) //TODO secondary: route[0] is fastest, but is it free?
       setDuration(results.routes[0].legs[0].duration.text)
     }
   
@@ -81,16 +86,22 @@ import {
             center={center} //TODO: customize
             zoom={15}
             mapContainerStyle={{ width: '100%', height: '100%' }}
-            
+            options={{
+              zoomControl: false,
+              streetViewControl: false,
+              mapTypeControl: false,
+              fullscreenControl: false,
+            }}
             onLoad={map => setMap(map)}
           >
-            <Marker position={center} />
+            {/* <Marker position={center} /> //Todo: use a loop to display all markers for hotels, attractions, etc. */}
             {directionsResponse && (
               <DirectionsRenderer directions={directionsResponse} />
             )}
           </GoogleMap>
         </Box>
-        <Box
+
+        <Box //The input box from here
           p={4}
           borderRadius='lg'
           m={4}
@@ -99,6 +110,7 @@ import {
           minW='container.md'
           zIndex='1'
         >
+          
           <HStack spacing={2} justifyContent='space-between'>
             <Box flexGrow={1}>
               <Autocomplete>
@@ -107,16 +119,12 @@ import {
             </Box>
             <Box flexGrow={1}>
               <Autocomplete>
-                <Input
-                  type='text'
-                  placeholder='Destination'
-                  ref={destiantionRef}
-                />
+                <Input type='text' placeholder='Destination' ref={destiantionRef}/>
               </Autocomplete>
             </Box>
   
             <ButtonGroup>
-              <Button colorScheme='pink' type='submit' onClick={calculateRoute}>
+              <Button colorScheme='blue' type='submit' onClick={calculateRoute}>
                 Calculate Route
               </Button>
               <IconButton
@@ -124,20 +132,23 @@ import {
                 icon={<FaTimes />}
                 onClick={clearRoute}
               />
-            </ButtonGroup>
-          </HStack>
-          <HStack spacing={4} mt={4} justifyContent='space-between'>
-            <Text>Distance: {distance} </Text>
-            <Text>Duration: {duration} </Text>
-            <IconButton
+              <IconButton
               aria-label='center back'
               icon={<FaLocationArrow />}
               isRound
-              onClick={() => {
+              onClick={() => { //KEEP
                 map.panTo(center)
                 map.setZoom(15)
               }}
             />
+            </ButtonGroup>
+          </HStack>
+          <HStack spacing={4} mt={4} justifyContent='space-between'>
+            //distance and duration is being displayed here
+{/*             
+            <Text>Distance: {distance} </Text>
+            <Text>Duration: {duration} </Text> */}
+            
           </HStack>
         </Box>
       </Flex>
