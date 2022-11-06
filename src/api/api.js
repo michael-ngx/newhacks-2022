@@ -12,13 +12,14 @@ export async function getPlacesData (coordarray, apiURL){
                 //open_now: true,
             },
             headers: {
-                'X-RapidAPI-Key': '46852c53cbmsh43d46674c4d3680p10f149jsnfefdf441df5c',
+                'X-RapidAPI-Key': 'b16dd151efmsh05e632886d1328dp1b7ccdjsn8016d82d6c11',
                 'X-RapidAPI-Host': 'travel-advisor.p.rapidapi.com'
               }
         }
         optionsArray.push(options);
     }
 
+    //to commit
     const promiseArray = [
       axios.get(apiURL,optionsArray[0]),
       axios.get(apiURL,optionsArray[1]),

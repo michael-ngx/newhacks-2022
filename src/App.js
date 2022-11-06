@@ -1,4 +1,4 @@
-import { Box, Button, ButtonGroup, Flex, HStack, IconButton, Input, VStack } from '@chakra-ui/react'
+import { Box, Button, ButtonGroup, Flex, HStack, IconButton, Input, VStack, Spinner } from '@chakra-ui/react'
 import { FaLocationArrow, FaTimes } from 'react-icons/fa'
 import { useJsApiLoader, GoogleMap, Marker, Autocomplete, DirectionsRenderer, Circle } from '@react-google-maps/api'
 
@@ -236,16 +236,18 @@ function App() {
             setEstablishmentElem([]);
             setSearchMarkers([]);
           }}>
-                x
+                X
           </Button>
             <VStack spacing={4} alignContent='space-between'>
               <Box><br/><b>What are you looking for?</b></Box>
               <Tabs align='flex-start' isLazy variant='soft-rounded' colorScheme='green' justify='space-between'>
                   <TabList alignContent='center'>
-                      <Tab className="tab-buttons" onClick={() => (setURL(filterKeys.hotel))}>Hotels</Tab>
-                      <Tab className="tab-buttons" onClick={() => (setURL(filterKeys.restaurant))} >Restaurants</Tab>
-                      <Tab className="tab-buttons" onClick={() => (setURL(filterKeys.attraction))}>Attractions</Tab>
+                      <Tab className="tab-buttons" onClick={() => {setEstablishmentElem([])(setURL(filterKeys.hotel))}}>Hotels</Tab>
+                      <Tab className="tab-buttons" onClick={() => {setEstablishmentElem([])(setURL(filterKeys.restaurant))}} >Restaurants</Tab>
+                      <Tab className="tab-buttons" onClick={() => {setEstablishmentElem([])(setURL(filterKeys.attraction))}}>Attractions</Tab>
+                      
                   </TabList>
+                  <Spinner position='absolute' left='13%' top='30%' hidden={establishmentElem.length !== 0}/>
                   <TabPanels>
                       <TabPanel > 
                         <Box position='absolute' left='1.5%' width='30%' overflow-y='hidden'>
