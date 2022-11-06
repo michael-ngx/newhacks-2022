@@ -46,13 +46,14 @@ function App() {
     attraction: 'https://travel-advisor.p.rapidapi.com/attractions/list-by-latlng'
   }
   const [URL, setURL] = useState(filterKeys.hotel)
-
+  const [establishments, setEstablishments] = useState([])
+  const [establishmentElem, setEstablishmentElem] = useState([])
 
   const placesToMarkers = (dataarray) => {
-    const markerArray = []
     for(let i = 0; i < 5; i++){
       var circle = dataarray[i].data.data //array of place data
       for(let j = 0; j < circle.length; j++){
+        //console.log(circle[j])
         if(circle[j].latitude == null) { continue };
         const coords = {
           lat: parseFloat(circle[j].latitude),
@@ -62,12 +63,12 @@ function App() {
        // let marker = <Marker position={coords}/>
         setSearchMarkers( (prev) => ([...prev, coords]))
        // markerArray.push(coords)
+        setEstablishments((prev) => ([...prev, circle[j]]))
       }
 
     }
    // console.log(markerArray)
     //setSearchMarkers(markerArray)
-    
   }
   useEffect(() => { 
     if(firstUpdate.current) {
@@ -76,10 +77,12 @@ function App() {
     }
       getPlacesData(coordinatesMaster,URL)
       .then((dataarray) => {
-       // console.log(dataarray)
         setSearchMarkers([])
+        setEstablishmentElem([])
         setPlaces(dataarray)
         placesToMarkers(dataarray)
+        console.log(dataarray)
+        showList()
       })
     }, [coordinatesMaster,URL])
 
@@ -140,7 +143,16 @@ function App() {
     destinationRef.current.value = ''
   }
 
-  
+  function showList() {
+    for(let x = 0; x < (establishments.length < 10? establishments.length: 10); x++){
+      const name = establishments[x].name
+      const rating = establishments[x].rating
+      //console.log(name + " " + rating)
+      setEstablishmentElem((prev) => ([...prev, <div><a>{name}</a><p>{rating}</p><br></br></div>]))
+    }
+    //console.log(establishmentElem)
+  }
+
   // *******************************************************************************
   // *******************************************************************************
   // Rendering
@@ -221,18 +233,22 @@ function App() {
               <Tabs isLazy variant='soft-rounded' colorScheme='green'>
                   <TabList>
                       <Tab onClick={() => (setURL(filterKeys.hotel))}>Hotels</Tab>
-                      <Tab onClick={() => (setURL(filterKeys.restaurant))}>Restaurants</Tab>
+                      <Tab onClick={() => (setURL(filterKeys.restaurant))} >Restaurants</Tab>
                       <Tab onClick={() => (setURL(filterKeys.attraction))}>Attractions</Tab>
                   </TabList>
                   <TabPanels>
                       <TabPanel> 
                         <Box>
+                          {console.log(establishmentElem.length)}
+                          {establishmentElem.map((div) => {return ( div )})}
+  
+                          <div><a href={'https://www.google.com/maps/search/?api=1&query=Google&query_place_id=ChIJMT5wCMw0K4gRnURiAF8kyLE'} target="_blank"> RESTAURANT NAME</a>
+                          <p>rating </p>
+                          <br></br></div>
+                          
                           <a href={'https://www.google.com/maps/search/?api=1&query=Google&query_place_id=ChIJMT5wCMw0K4gRnURiAF8kyLE'} target="_blank"> RESTAURANT NAME</a>
                           <p>rating </p>
-                          <br/>
-                          <a href={'https://www.google.com/maps/search/?api=1&query=Google&query_place_id=ChIJMT5wCMw0K4gRnURiAF8kyLE'} target="_blank"> RESTAURANT NAME</a>
-                          <p>rating </p>
-                          <br/>
+                           
                         </Box>
                       </TabPanel>
                       <TabPanel> <p>two!</p> </TabPanel>
