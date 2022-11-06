@@ -80,8 +80,6 @@ function App() {
         setSearchMarkers([])
         setPlaces(dataarray)
         placesToMarkers(dataarray)
-        
-        // handlePlaces()       //TODO: start to handle place data as places is filled
       })
     }, [coordinatesMaster,URL])
 
@@ -173,7 +171,7 @@ function App() {
         >
 
           {searchMarkers.map((marker) => {
-            return <Marker position = {marker}  />
+            return <Marker position = {marker} onClick={() => setlistDrawer(true)}/>
           })
         }
          
@@ -243,10 +241,6 @@ function App() {
                   </Tabs>
             </VStack>        
             </Box>}
-
-        <Button onClick={() => setlistDrawer(true)}>
-          Test Open
-        </Button>
 
         {/* ************************************* */}
         {/* Input Box */}
