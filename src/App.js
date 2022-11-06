@@ -1,30 +1,49 @@
-import { Box, Button, ButtonGroup, Flex, HStack, IconButton, Input, SkeletonText, Text } from '@chakra-ui/react'
+import { Box, Button, ButtonGroup, Flex, HStack, IconButton, Input, Text } from '@chakra-ui/react'
 import { FaLocationArrow, FaTimes } from 'react-icons/fa'
 import { useJsApiLoader, GoogleMap, Marker, Autocomplete, DirectionsRenderer, Circle } from '@react-google-maps/api'
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
+import { getPlacesData } from './api/api.js'
+
+// import List from './components/List.js'
+
 // Starting position
 const center = { lat: 43.6607388, lng: -79.3988062 }
-
 
 function App() {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries: ['places'],
   })
-
+  
   const [map, setMap] = useState(/** @type google.maps.Map */ (null))
   const [directionsResponse, setDirectionsResponse] = useState(null)
   const [markersList, setMarkersList] = useState([])
   const [circles, setCircles] = useState([])
+  const [coordinatesMaster, setCoordinatesMaster] = useState([])
+  const [searchResults, setSearchResults] = useState([])
+  const [searchMarkers, setSearchMarkers] = useState([])
   // Note: directionsResponse is recorded, but not rendered when we execute the calculateRoute().
   // Needs directionsRenderer is used to render route between destinations
   const [distance, setDistance] = useState('')
   const [duration, setDuration] = useState('')
+  const searchedMarker = []
+  
+  const [places, setPlaces] = useState([])
+  
+  const [listDrawer, setlistDrawer] = useState(false)
+
+  useEffect(() => {
+    getPlacesData()
+    .then((data) => {
+      console.log(data)
+      setPlaces(data)
+    })
+  }, [])
 
   /** @type React.MutableRefObject<HTMLInputElement> */
   const originRef = useRef()
   /** @type React.MutableRefObject<HTMLInputElement> */
-  const destiantionRef = useRef()
+  const destinationRef = useRef()
 
   // Loading screen
   if (!isLoaded) {
@@ -33,14 +52,14 @@ function App() {
 
   // Calculate routes between origin & destination
   async function calculateRoute() {
-    if (originRef.current.value === '' || destiantionRef.current.value === '') {
+    if (originRef.current.value === '' || destinationRef.current.value === '') {
       return
     }
     // eslint-disable-next-line no-undef
     const directionsService = new google.maps.DirectionsService()
     const results = await directionsService.route({
       origin: originRef.current.value,
-      destination: destiantionRef.current.value,
+      destination: destinationRef.current.value,
       // eslint-disable-next-line no-undef
       travelMode: google.maps.TravelMode.DRIVING,
     })
@@ -49,22 +68,25 @@ function App() {
     setDuration(results.routes[0].legs[0].duration.text)
     
     const leg = results.routes[0].legs[0]
-
+    const coordinates = []
     for(let j = 0; j < leg.steps.length; j++){
-      let skip = Math.ceil(leg.steps[j].path.length / 5)
+      if(leg.steps[j].distance.value < 1500) {continue};
+      let target = leg.steps[j].distance.value / 4000
+      let skip = Math.ceil(leg.steps[j].path.length / target)
       for(let i = 0; i < leg.steps[j].path.length; i+=skip){
         const coords = { 
           lat: leg.steps[j].path[i].lat(),
           lng: leg.steps[j].path[i].lng()
         }
+        setCoordinatesMaster( (prev) => ([...prev, coords]))
+        coordinates.push(coords)
         setMarkersList( (prev) => ([...prev, <Marker position={coords}/>]))
-
-        
-        setCircles( (prev) => ([...prev, <Circle center={coords} radius ={5000} 
-          options={ {strokeOpacity: 0.3, strokeWeight: 1, fillColor: '#FF0000', strokeColor: '#FF0000', fillOpacity: 0.3}}/>]));
-        
+        setCircles( (prev) => ([...prev, <Circle center={coords} radius ={8000} 
+        options={ {strokeOpacity: 0.3, strokeWeight: 1, fillColor: '#FF0000', strokeColor: '#FF0000', fillOpacity: 0.3}}/>]));
       }
     }
+    setCoordinatesMaster(coordinates);
+    // getPlacesData(coordinates[0]);
   }
 
   // Clear Route when pressed X button
@@ -73,8 +95,18 @@ function App() {
     setDistance('')
     setDuration('')
     originRef.current.value = ''
-    destiantionRef.current.value = ''
+    destinationRef.current.value = ''
   }
+
+  // *******************************************************************************
+  // *******************************************************************************
+  // Find nearby stuff
+  // *******************************************************************************
+  // *******************************************************************************
+
+  function serachingQueries(){
+    //todo: iterate through all the checked off queries
+  };
 
   // *******************************************************************************
   // *******************************************************************************
@@ -83,7 +115,10 @@ function App() {
   // *******************************************************************************
 
   return (
-    <Flex position='relative' flexDirection='column' alignItems='center' h='100vh' w='100vw' >
+    <Flex position='absolute' flexDirection='column' h='100vh' w='100vw'>
+      {/* ************************************* */}
+      {/* Google Map */}
+      {/* ************************************* */}
       <Box position='absolute' left={0} top={0} h='100%' w='100%'>
         {/* Google Map Box */}
         <GoogleMap
@@ -97,18 +132,39 @@ function App() {
             fullscreenControl: false,
           }}
           onLoad={map => setMap(map)}
-        >
+      >
           {/* <Marker position={center} /> //Todo: use a loop to display all markers for hotels, attractions, etc. */}
           {directionsResponse && (
             <DirectionsRenderer directions={directionsResponse} />
           )}
-          <div>{markersList}{circles}</div>
+          <div>{markersList}{searchMarkers}</div>
+          {/*add back {circles} after amagalating into one polygon */}
         </GoogleMap>
       </Box>
-
-        <Box //The input box from here
-          p={4} borderRadius='lg' m={4} bgColor='white' shadow='base' minW='container.md' zIndex='1' >
+      
+      <HStack justify='space-between' align='flex-start'>
+        {/* ************************************* */}
+        {/* Places List View */}
+        {/* ************************************* */}
+        {/* Opens the Drawer when pressed the button */}
+        {listDrawer &&
+        <Box h='100vh' w='30%' p={5} borderRadius='lg' bgColor='white' shadow='base' zIndex='1'> 
           
+          <h1>List</h1>
+
+          <Button onClick={() => setlistDrawer(false)}>
+              Test Close
+          </Button>
+        </Box>}
+
+        <Button onClick={() => setlistDrawer(true)}>
+          Test Open
+        </Button>
+
+        {/* ************************************* */}
+        {/* Input Box */}
+        {/* ************************************* */}
+        <Box w='50%' p={5} borderRadius='lg' bgColor='white' shadow='base' zIndex='1' >
           <HStack spacing={2} justifyContent='space-between'>
             <Box flexGrow={1}>
               <Autocomplete>
@@ -117,10 +173,10 @@ function App() {
             </Box>
             <Box flexGrow={1}>
               <Autocomplete>
-                <Input type='text' placeholder='Destination' ref={destiantionRef}/>
+                <Input type='text' placeholder='Destination' ref={destinationRef}/>
               </Autocomplete>
             </Box>
-  
+
             <ButtonGroup>
               <Button colorScheme='blue' type='submit' onClick={calculateRoute}>
                 Calculate Route
@@ -134,7 +190,7 @@ function App() {
               aria-label='center back'
               icon={<FaLocationArrow />}
               isRound
-              onClick={() => { //KEEP
+              onClick={() => {
                 map.panTo(center)
                 map.setZoom(15)
               }}
@@ -147,8 +203,9 @@ function App() {
             <Text>Duration: {duration} </Text> */}
           </HStack>
         </Box>
-      </Flex>
-    )
-  }
+      </HStack>
+    </Flex>
+  )
+}
   
-  export default App
+export default App
