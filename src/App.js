@@ -1,4 +1,4 @@
-import { Box, Button, ButtonGroup, Flex, HStack, IconButton, Input, Text } from '@chakra-ui/react'
+import { Box, Button, ButtonGroup, Flex, HStack, IconButton, Input } from '@chakra-ui/react'
 import { FaLocationArrow, FaTimes } from 'react-icons/fa'
 import { useJsApiLoader, GoogleMap, Marker, Autocomplete, DirectionsRenderer, Circle } from '@react-google-maps/api'
 
@@ -20,29 +20,37 @@ function App() {
   
   const [map, setMap] = useState(/** @type google.maps.Map */ (null))
   const [directionsResponse, setDirectionsResponse] = useState(null)
+  
+  
+  // ON THE LINE
   const [markersList, setMarkersList] = useState([])
   const [circles, setCircles] = useState([])
   const [coordinatesMaster, setCoordinatesMaster] = useState([])
-  const [searchResults, setSearchResults] = useState([])
-  const [searchMarkers, setSearchMarkers] = useState([])
   // Note: directionsResponse is recorded, but not rendered when we execute the calculateRoute().
   // Needs directionsRenderer is used to render route between destinations
-  const [distance, setDistance] = useState('')
-  const [duration, setDuration] = useState('')
 
+  // NOT ON THE LINE
+  const [searchMarkers, setSearchMarkers] = useState([])
+  const [places, setPlaces] = useState([])
+  const firstUpdate = useRef(true);
+  
+  // Drawers for rendering
   const [menuDrawer, setmenuDrawer] = useState(true)
   const [listDrawer, setlistDrawer] = useState(false)
-  const searchedMarker = []
-  
-  const [places, setPlaces] = useState([])
 
-  useEffect(() => {
-    getPlacesData()
-    .then((data) => {
-      console.log(data)
-      setPlaces(data)
-    })
-  }, [])
+  useEffect(() => { 
+    if(firstUpdate.current) {
+        firstUpdate.current = false;
+        return;
+    }
+      getPlacesData(coordinatesMaster)
+      .then((dataarray) => {
+        console.log(dataarray)
+        setPlaces(dataarray)
+        // handlePlaces()       //TODO: start to handle place data as places is filled
+      })
+    }, [coordinatesMaster])
+
 
   /** @type React.MutableRefObject<HTMLInputElement> */
   const originRef = useRef()
@@ -59,6 +67,8 @@ function App() {
     if (originRef.current.value === '' || destinationRef.current.value === '') {
       return
     }
+    setMarkersList([])
+    setDirectionsResponse(null)
     // eslint-disable-next-line no-undef
     const directionsService = new google.maps.DirectionsService()
     const results = await directionsService.route({
@@ -68,49 +78,32 @@ function App() {
       travelMode: google.maps.TravelMode.DRIVING,
     })
     setDirectionsResponse(results)
-    setDistance(results.routes[0].legs[0].distance.text) //TODO secondary: route[0] is fastest, but is it free?
-    setDuration(results.routes[0].legs[0].duration.text)
     
     const leg = results.routes[0].legs[0]
     const coordinates = []
-    for(let j = 0; j < leg.steps.length; j++){
-      if(leg.steps[j].distance.value < 1500) {continue};
-      let target = leg.steps[j].distance.value / 4000
-      let skip = Math.ceil(leg.steps[j].path.length / target)
-      for(let i = 0; i < leg.steps[j].path.length; i+=skip){
+    for(let i = 0; i < results.routes[0].overview_path.length; i+=Math.ceil(results.routes[0].overview_path.length/5)){
         const coords = { 
-          lat: leg.steps[j].path[i].lat(),
-          lng: leg.steps[j].path[i].lng()
+          lat: results.routes[0].overview_path[i].lat(),
+          lng: results.routes[0].overview_path[i].lng()
         }
-        setCoordinatesMaster( (prev) => ([...prev, coords]))
+        //setCoordinatesMaster( (prev) => ([...prev, coords]))
         coordinates.push(coords)
         setMarkersList( (prev) => ([...prev, <Marker position={coords}/>]))
         setCircles( (prev) => ([...prev, <Circle center={coords} radius ={8000} 
         options={ {strokeOpacity: 0.3, strokeWeight: 1, fillColor: '#FF0000', strokeColor: '#FF0000', fillOpacity: 0.3}}/>]));
       }
-    }
+    
     setCoordinatesMaster(coordinates);
-    // getPlacesData(coordinates[0]);
   }
 
   // Clear Route when pressed X button
   function clearRoute() {
+    setMarkersList([])
     setDirectionsResponse(null)
-    setDistance('')
-    setDuration('')
+    
     originRef.current.value = ''
     destinationRef.current.value = ''
   }
-
-  // *******************************************************************************
-  // *******************************************************************************
-  // Find nearby stuff
-  // *******************************************************************************
-  // *******************************************************************************
-
-  function serachingQueries(){
-    //todo: iterate through all the checked off queries
-  };
 
   // *******************************************************************************
   // *******************************************************************************
@@ -238,6 +231,6 @@ function App() {
       </HStack>
     </Flex>
   )
-}
+          }
   
 export default App
