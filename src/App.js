@@ -1,4 +1,4 @@
-import { Box, Button, ButtonGroup, Flex, HStack, IconButton, Input, Text } from '@chakra-ui/react'
+import { Box, Button, ButtonGroup, Flex, HStack, IconButton, Input } from '@chakra-ui/react'
 import { FaLocationArrow, FaTimes } from 'react-icons/fa'
 import { useJsApiLoader, GoogleMap, Marker, Autocomplete, DirectionsRenderer, Circle } from '@react-google-maps/api'
 import { useRef, useState, useEffect } from 'react'
@@ -19,27 +19,20 @@ function App() {
   const [directionsResponse, setDirectionsResponse] = useState(null)
   
   
-  //ON THE LINE
+  // ON THE LINE
   const [markersList, setMarkersList] = useState([])
   const [circles, setCircles] = useState([])
   const [coordinatesMaster, setCoordinatesMaster] = useState([])
   // Note: directionsResponse is recorded, but not rendered when we execute the calculateRoute().
   // Needs directionsRenderer is used to render route between destinations
 
-  //NOT ON THE LINE
-  const [searchResults, setSearchResults] = useState([])
+  // NOT ON THE LINE
   const [searchMarkers, setSearchMarkers] = useState([])
-  const searchedMarker = []
-
-  //deprecate?
-  const [distance, setDistance] = useState('')
-  const [duration, setDuration] = useState('')
-  
   const [places, setPlaces] = useState([])
-  
-  const [listDrawer, setlistDrawer] = useState(false)
-
   const firstUpdate = useRef(true);
+  
+  // Drawers for rendering
+  const [listDrawer, setlistDrawer] = useState(false)
 
   useEffect(() => { 
     if(firstUpdate.current) {
@@ -50,10 +43,10 @@ function App() {
       .then((dataarray) => {
         console.log(dataarray)
         setPlaces(dataarray)
+        // handlePlaces()       //TODO: start to handle place data as places is filled
       })
     }, [coordinatesMaster])
-      
-      
+
 
   /** @type React.MutableRefObject<HTMLInputElement> */
   const originRef = useRef()
@@ -81,8 +74,6 @@ function App() {
       travelMode: google.maps.TravelMode.DRIVING,
     })
     setDirectionsResponse(results)
-    setDistance(results.routes[0].legs[0].distance.text) //TODO secondary: route[0] is fastest, but is it free?
-    setDuration(results.routes[0].legs[0].duration.text)
     
     const leg = results.routes[0].legs[0]
     const coordinates = []
@@ -99,29 +90,16 @@ function App() {
       }
     
     setCoordinatesMaster(coordinates);
-    // getPlacesData(coordinates[0]);
   }
 
   // Clear Route when pressed X button
   function clearRoute() {
     setMarkersList([])
     setDirectionsResponse(null)
-    setDistance('')
-    setDuration('')
     
     originRef.current.value = ''
     destinationRef.current.value = ''
   }
-
-  // *******************************************************************************
-  // *******************************************************************************
-  // Find nearby stuff
-  // *******************************************************************************
-  // *******************************************************************************
-
-  function serachingQueries(){
-    //todo: iterate through all the checked off queries
-  };
 
   // *******************************************************************************
   // *******************************************************************************
