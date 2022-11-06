@@ -1,10 +1,8 @@
 import axios from 'axios'
 
-
-
 export async function getPlacesData (coordarray){
     const optionsArray = []
-    for (let i = 0; i < coordarray.length; i++){
+    for (let i = 0; i < 5; i++){
         const options = {
             params: {
                 latitude: coordarray[i].lat,
@@ -17,21 +15,16 @@ export async function getPlacesData (coordarray){
                 'X-RapidAPI-Host': 'travel-advisor.p.rapidapi.com'
               }
         }
-        
         optionsArray.push(options);
     }
 
     const promiseArray = [
-        axios.get('https://travel-advisor.p.rapidapi.com/restaurants/list-by-latlng',optionsArray[0])
+      axios.get('https://travel-advisor.p.rapidapi.com/restaurants/list-by-latlng',optionsArray[0]),
+      axios.get('https://travel-advisor.p.rapidapi.com/restaurants/list-by-latlng',optionsArray[1]),
+      axios.get('https://travel-advisor.p.rapidapi.com/restaurants/list-by-latlng',optionsArray[2]),
+      axios.get('https://travel-advisor.p.rapidapi.com/restaurants/list-by-latlng',optionsArray[3]),
+      axios.get('https://travel-advisor.p.rapidapi.com/restaurants/list-by-latlng',optionsArray[4])
     ]
-    // const promiseArray2 = [
-    //     axios.get('https://travel-advisor.p.rapidapi.com/restaurants/list-by-latlng',optionsArray[5]),
-    //     axios.get('https://travel-advisor.p.rapidapi.com/restaurants/list-by-latlng',optionsArray[6]),
-    //     axios.get('https://travel-advisor.p.rapidapi.com/restaurants/list-by-latlng',optionsArray[7])
-    // ]
-    // for (let j = 0; j < optionsArray.length; j++){
-    //     promiseArray.push(axios.get('https://travel-advisor.p.rapidapi.com/restaurants/list-by-latlng',optionsArray[j]));
-    // }
 
     try {
         const resultArray = await Promise.all(promiseArray)
@@ -39,13 +32,4 @@ export async function getPlacesData (coordarray){
     } catch (error) {
         console.log(error)
     }
-
-    // try {
-    //     const resultArray2 = await Promise.all(promiseArray2)
-    //     const resultArraymain = [...resultArray0, ...resultArray2]
-    //     return resultArraymain;
-    // } catch (error) {
-    //     console.log(error)
-    // }
 }
-

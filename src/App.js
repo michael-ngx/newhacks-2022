@@ -41,28 +41,19 @@ function App() {
 
   const firstUpdate = useRef(true);
 
-  //this is with the whole array
- useEffect(() => { 
-  if(firstUpdate.current) {
-      firstUpdate.current = false;
-      return;
-  }
-    getPlacesData(coordinatesMaster)
-    .then((dataarray) => {
-      console.log(dataarray)
-      // setPlaces(dataarray)
-    })
-  }, [coordinatesMaster])
-
-  //this one is with just one
-  // useEffect(() => {
-  //     getPlacesData(coordinatesMaster[0])
-  //     .then((data) => {
-  //       console.log(data)
-  //       setPlaces(data)
-  //     })
-    
-  // }, [coordinatesMaster])
+  useEffect(() => { 
+    if(firstUpdate.current) {
+        firstUpdate.current = false;
+        return;
+    }
+      getPlacesData(coordinatesMaster)
+      .then((dataarray) => {
+        console.log(dataarray)
+        setPlaces(dataarray)
+      })
+    }, [coordinatesMaster])
+      
+      
 
   /** @type React.MutableRefObject<HTMLInputElement> */
   const originRef = useRef()
@@ -79,6 +70,8 @@ function App() {
     if (originRef.current.value === '' || destinationRef.current.value === '') {
       return
     }
+    setMarkersList([])
+    setDirectionsResponse(null)
     // eslint-disable-next-line no-undef
     const directionsService = new google.maps.DirectionsService()
     const results = await directionsService.route({
@@ -93,14 +86,10 @@ function App() {
     
     const leg = results.routes[0].legs[0]
     const coordinates = []
-    for(let j = 0; j < leg.steps.length; j++){
-      if(leg.steps[j].distance.value < 4000) {continue};
-      let target = leg.steps[j].distance.value / 16000
-      let skip = Math.ceil(leg.steps[j].path.length / target)
-      for(let i = 0; i < leg.steps[j].path.length; i+=skip){
+    for(let i = 0; i < results.routes[0].overview_path.length; i+=Math.ceil(results.routes[0].overview_path.length/5)){
         const coords = { 
-          lat: leg.steps[j].path[i].lat(),
-          lng: leg.steps[j].path[i].lng()
+          lat: results.routes[0].overview_path[i].lat(),
+          lng: results.routes[0].overview_path[i].lng()
         }
         //setCoordinatesMaster( (prev) => ([...prev, coords]))
         coordinates.push(coords)
@@ -108,13 +97,14 @@ function App() {
         setCircles( (prev) => ([...prev, <Circle center={coords} radius ={8000} 
         options={ {strokeOpacity: 0.3, strokeWeight: 1, fillColor: '#FF0000', strokeColor: '#FF0000', fillOpacity: 0.3}}/>]));
       }
-    }
+    
     setCoordinatesMaster(coordinates);
     // getPlacesData(coordinates[0]);
   }
 
   // Clear Route when pressed X button
   function clearRoute() {
+    setMarkersList([])
     setDirectionsResponse(null)
     setDistance('')
     setDuration('')
@@ -231,6 +221,6 @@ function App() {
       </HStack>
     </Flex>
   )
-}
+          }
   
 export default App
