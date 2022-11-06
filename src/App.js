@@ -211,9 +211,9 @@ function App() {
         {/* Places List View */}
         {/* ************************************* */}
         {listDrawer &&
-        <Box h='100vh' w='30%' p={5} borderRadius='lg' bgColor='white' shadow='base' zIndex='1'> 
+        <Box h='100vh' w='30%' borderRadius='lg' bgColor='white' shadow='base' zIndex='1'> 
           
-          <Button left="0" zIndex='1' position='absolute' onClick={() => setlistDrawer(false)}>
+          <Button left='0' zIndex='1' position='absolute' bgColor='light-grey' onClick={() => setlistDrawer(false)}>
                 x
           </Button>
             <VStack spacing={4} alignContent='space-between'>
@@ -241,11 +241,14 @@ function App() {
                   </Tabs>
             </VStack>        
             </Box>}
+        <Button bgColor='white' shadow='base' zIndex='1' onClick={() => setlistDrawer(true)}>
+          Filter
+        </Button>
 
         {/* ************************************* */}
         {/* Input Box */}
         {/* ************************************* */}
-        <Box w='50%' p={5} borderRadius='lg' bgColor='white' shadow='base' zIndex='1'>
+        <Box position='fixed' right='0' w='50%' p={5} borderRadius='lg' bgColor='white' shadow='base' zIndex='1'>
           <HStack spacing={2} justifyContent='space-between'>
             <Box flexGrow={1}>
               <Autocomplete>
