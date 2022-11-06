@@ -3,7 +3,6 @@ import { FaLocationArrow, FaTimes } from 'react-icons/fa'
 import { useJsApiLoader, GoogleMap, Marker, Autocomplete, DirectionsRenderer, Circle } from '@react-google-maps/api'
 
 import { useRef, useState, useEffect } from 'react'
-import Tabs from './components/Tabs';
 import homebg from "./homebg.png";
 import "./imagestyle.css"
 import { getPlacesData } from './api/api.js'
