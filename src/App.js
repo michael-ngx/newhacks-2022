@@ -1,7 +1,10 @@
-import { Box, Button, ButtonGroup, Flex, HStack, IconButton, Input, SkeletonText, Text } from '@chakra-ui/react'
+import { Box, Button, ButtonGroup, Flex, HStack, IconButton, Input, Text } from '@chakra-ui/react'
 import { FaLocationArrow, FaTimes } from 'react-icons/fa'
 import { useJsApiLoader, GoogleMap, Marker, Autocomplete, DirectionsRenderer, Circle } from '@react-google-maps/api'
 import { useRef, useState } from 'react'
+
+import List from './components/List.js'
+
 // Starting position
 const center = { lat: 43.6607388, lng: -79.3988062 }
 
@@ -20,6 +23,7 @@ function App() {
   // Needs directionsRenderer is used to render route between destinations
   const [distance, setDistance] = useState('')
   const [duration, setDuration] = useState('')
+  const [listDrawer, setlistDrawer] = useState(false)
 
   /** @type React.MutableRefObject<HTMLInputElement> */
   const originRef = useRef()
@@ -58,10 +62,8 @@ function App() {
           lng: leg.steps[j].path[i].lng()
         }
         setMarkersList( (prev) => ([...prev, <Marker position={coords}/>]))
-
-        
         setCircles( (prev) => ([...prev, <Circle center={coords} radius ={5000} 
-          options={ {strokeOpacity: 0.3, strokeWeight: 1, fillColor: '#FF0000', strokeColor: '#FF0000', fillOpacity: 0.3}}/>]));
+        options={ {strokeOpacity: 0.3, strokeWeight: 1, fillColor: '#FF0000', strokeColor: '#FF0000', fillOpacity: 0.3}}/>]));
         
       }
     }
@@ -83,7 +85,10 @@ function App() {
   // *******************************************************************************
 
   return (
-    <Flex position='relative' flexDirection='column' alignItems='center' h='100vh' w='100vw' >
+    <Flex position='absolute' flexDirection='column' h='100vh' w='100vw'>
+      {/* ************************************* */}
+      {/* Google Map */}
+      {/* ************************************* */}
       <Box position='absolute' left={0} top={0} h='100%' w='100%'>
         {/* Google Map Box */}
         <GoogleMap
@@ -97,7 +102,7 @@ function App() {
             fullscreenControl: false,
           }}
           onLoad={map => setMap(map)}
-        >
+      >
           {/* <Marker position={center} /> //Todo: use a loop to display all markers for hotels, attractions, etc. */}
           {directionsResponse && (
             <DirectionsRenderer directions={directionsResponse} />
@@ -105,10 +110,31 @@ function App() {
           <div>{markersList}{circles}</div>
         </GoogleMap>
       </Box>
-
-        <Box //The input box from here
-          p={4} borderRadius='lg' m={4} bgColor='white' shadow='base' minW='container.md' zIndex='1' >
+      
+      <HStack justify='space-between' align='flex-start'>
+        {/* ************************************* */}
+        {/* Places List View */}
+        {/* ************************************* */}
+        {/* Opens the Drawer when pressed the button */}
+        {listDrawer &&
+        <Box h='100vh' w='30%' p={5} borderRadius='lg' bgColor='white' shadow='base' zIndex='1'> 
+          <List>
+            
+          </List>
           
+          <Button onClick={() => setlistDrawer(false)}>
+              Test Close
+          </Button>
+        </Box>}
+
+        <Button onClick={() => setlistDrawer(true)}>
+          Test Open
+        </Button>
+
+        {/* ************************************* */}
+        {/* Input Box */}
+        {/* ************************************* */}
+        <Box w='50%' p={5} borderRadius='lg' bgColor='white' shadow='base' zIndex='1' >
           <HStack spacing={2} justifyContent='space-between'>
             <Box flexGrow={1}>
               <Autocomplete>
@@ -120,7 +146,7 @@ function App() {
                 <Input type='text' placeholder='Destination' ref={destiantionRef}/>
               </Autocomplete>
             </Box>
-  
+
             <ButtonGroup>
               <Button colorScheme='blue' type='submit' onClick={calculateRoute}>
                 Calculate Route
@@ -134,7 +160,7 @@ function App() {
               aria-label='center back'
               icon={<FaLocationArrow />}
               isRound
-              onClick={() => { //KEEP
+              onClick={() => {
                 map.panTo(center)
                 map.setZoom(15)
               }}
@@ -147,8 +173,9 @@ function App() {
             <Text>Duration: {duration} </Text> */}
           </HStack>
         </Box>
-      </Flex>
-    )
-  }
+      </HStack>
+    </Flex>
+  )
+}
   
-  export default App
+export default App
