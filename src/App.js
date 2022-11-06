@@ -38,20 +38,52 @@ function App() {
   const [menuDrawer, setmenuDrawer] = useState(true)
   const [listDrawer, setlistDrawer] = useState(false)
 
+  const [filter, setFilter] = useState('')
+  const filterKeys = {
+    hotel: 'https://travel-advisor.p.rapidapi.com/hotels/list-by-latlng',
+    restaurant: 'https://travel-advisor.p.rapidapi.com/restaurants/list-by-latlng',
+    attraction: 'https://travel-advisor.p.rapidapi.com/attractions/list-by-latlng'
+  }
+  const [URL, setURL] = useState(filterKeys.hotel)
+
+
+  const placesToMarkers = (dataarray) => {
+    const markerArray = []
+    for(let i = 0; i < 5; i++){
+      var circle = dataarray[i].data.data //array of place data
+      for(let j = 0; j < circle.length; j++){
+        if(circle[j].latitude == null) { continue };
+        const coords = {
+          lat: parseFloat(circle[j].latitude),
+          lng: parseFloat(circle[j].longitude)
+        }
+        //console.log(coords)
+       // let marker = <Marker position={coords}/>
+        setSearchMarkers( (prev) => ([...prev, coords]))
+       // markerArray.push(coords)
+      }
+
+    }
+   // console.log(markerArray)
+    //setSearchMarkers(markerArray)
+    
+  }
   useEffect(() => { 
     if(firstUpdate.current) {
         firstUpdate.current = false;
         return;
     }
-      getPlacesData(coordinatesMaster)
+      getPlacesData(coordinatesMaster,URL)
       .then((dataarray) => {
-        console.log(dataarray)
+       // console.log(dataarray)
         setPlaces(dataarray)
+        placesToMarkers(dataarray)
+        
         // handlePlaces()       //TODO: start to handle place data as places is filled
       })
-    }, [coordinatesMaster])
+    }, [coordinatesMaster,URL])
 
-
+    
   /** @type React.MutableRefObject<HTMLInputElement> */
   const originRef = useRef()
   /** @type React.MutableRefObject<HTMLInputElement> */
@@ -82,10 +114,12 @@ function App() {
     const leg = results.routes[0].legs[0]
     const coordinates = []
     for(let i = 0; i < results.routes[0].overview_path.length; i+=Math.ceil(results.routes[0].overview_path.length/5)){
-        const coords = { 
+       
+      const coords = { 
           lat: results.routes[0].overview_path[i].lat(),
           lng: results.routes[0].overview_path[i].lng()
         }
+        //console.log(coords)
         //setCoordinatesMaster( (prev) => ([...prev, coords]))
         coordinates.push(coords)
         setMarkersList( (prev) => ([...prev, <Marker position={coords}/>]))
@@ -105,6 +139,7 @@ function App() {
     destinationRef.current.value = ''
   }
 
+  
   // *******************************************************************************
   // *******************************************************************************
   // Rendering
@@ -132,16 +167,21 @@ function App() {
             fullscreenControl: false,
           }}
           onLoad={map => setMap(map)}
-      >
+        >
+
+          {searchMarkers.map((marker) => {
+            return <Marker position = {marker}  />
+          })
+        }
+         
           {/* <Marker position={center} /> //Todo: use a loop to display all markers for hotels, attractions, etc. */}
           {directionsResponse && (
             <DirectionsRenderer directions={directionsResponse} />
           )}
-          <div>{markersList}{searchMarkers}</div>
+       
           {/*add back {circles} after amagalating into one polygon */}
         </GoogleMap>
       </Box>
-
       <div id="home">
       
       {menuDrawer &&
@@ -155,7 +195,7 @@ function App() {
             </Box>
           </div>
           
-          <Button id="startbutton" left='42%' top='55vh' width="6cm" height="1.5cm" zIndex='3' position='absolute' onClick={() => setmenuDrawer(false)}>
+          <Button id="startbutton" left='42%' top='55vh' width="6cm" height="1.5cm" zIndex='5' position='absolute' onClick={() => setmenuDrawer(false)}>
               Start my trip
           
           </Button>
@@ -165,7 +205,17 @@ function App() {
           Test Open
         </Button> */}
       </div>
-
+      <Box>
+        <Button id='hotel' onClick={() => (
+          setURL(filterKeys.hotel))}
+          >Hotel</Button>
+        <Button id='restaurant' onClick={() => (
+          setURL(filterKeys.restaurant))}
+          >Restaurant</Button>
+        <Button id='attrtaction' onClick={() => (
+          setURL(filterKeys.attraction))}
+          >Attractions</Button>
+        </Box>
       <HStack justify='space-between' align='flex-start'>
         {/* ************************************* */}
         {/* Places List View */}
@@ -173,14 +223,14 @@ function App() {
         {/* Opens the Drawer when pressed the button */}
 
         {listDrawer &&
-        <Box h='100vh' w='30%' p={5} borderRadius='lg' bgColor='white' shadow='base' zIndex='1'> 
-          
-          <h1>List</h1>
+          <Box h='100vh' w='30%' p={5} borderRadius='lg' bgColor='white' shadow='base' zIndex='1'>
 
-          <Button onClick={() => setlistDrawer(false)}>
+            <h1>List</h1>
+
+            <Button onClick={() => setlistDrawer(false)}>
               Test Close
-          </Button>
-        </Box>}
+            </Button>
+          </Box>}
 
         <Button onClick={() => setlistDrawer(true)}>
           Test Open
@@ -189,7 +239,7 @@ function App() {
         {/* ************************************* */}
         {/* Input Box */}
         {/* ************************************* */}
-        <Box w='50%' p={5} borderRadius='lg' bgColor='white' shadow='base' zIndex='1' >
+        <Box w='50%' p={5} borderRadius='lg' bgColor='white' shadow='base' zIndex='1'>
           <HStack spacing={2} justifyContent='space-between'>
             <Box flexGrow={1}>
               <Autocomplete>
@@ -198,7 +248,7 @@ function App() {
             </Box>
             <Box flexGrow={1}>
               <Autocomplete>
-                <Input type='text' placeholder='Destination' ref={destinationRef}/>
+                <Input type='text' placeholder='Destination' ref={destinationRef} />
               </Autocomplete>
             </Box>
 
@@ -209,28 +259,26 @@ function App() {
               <IconButton
                 aria-label='center back'
                 icon={<FaTimes />}
-                onClick={clearRoute}
-              />
+                onClick={clearRoute} />
               <IconButton
-              aria-label='center back'
-              icon={<FaLocationArrow />}
-              isRound
-              onClick={() => {
-                map.panTo(center)
-                map.setZoom(15)
-              }}
-            />
+                aria-label='center back'
+                icon={<FaLocationArrow />}
+                isRound
+                onClick={() => {
+                  map.panTo(center)
+                  map.setZoom(15)
+                } } />
             </ButtonGroup>
           </HStack>
           <HStack spacing={4} mt={4} justifyContent='space-between'>
             {/* Display distance and duration */}
             {/* <Text>Distance: {distance} </Text>
-            <Text>Duration: {duration} </Text> */}
+    <Text>Duration: {duration} </Text> */}
           </HStack>
         </Box>
       </HStack>
     </Flex>
   )
-          }
+}
   
 export default App

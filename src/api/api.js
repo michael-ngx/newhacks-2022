@@ -1,17 +1,18 @@
 import axios from 'axios'
 
-export async function getPlacesData (coordarray){
+export async function getPlacesData (coordarray, apiURL){
     const optionsArray = []
     for (let i = 0; i < 5; i++){
         const options = {
             params: {
                 latitude: coordarray[i].lat,
                 longitude: coordarray[i].lng,
-                distance: '5',
-                limit: '1',
+                distance: '8',
+                limit: '10'
+                //open_now: true,
             },
             headers: {
-                'X-RapidAPI-Key': '6d1adcf553mshd38cfcaa3f893e4p15bb5ejsnbdff288d6e40',
+                'X-RapidAPI-Key': '6a95da9e38mshf440bbd2d01bc55p108909jsn43d9157b9246',
                 'X-RapidAPI-Host': 'travel-advisor.p.rapidapi.com'
               }
         }
@@ -19,11 +20,11 @@ export async function getPlacesData (coordarray){
     }
 
     const promiseArray = [
-      axios.get('https://travel-advisor.p.rapidapi.com/restaurants/list-by-latlng',optionsArray[0]),
-      axios.get('https://travel-advisor.p.rapidapi.com/restaurants/list-by-latlng',optionsArray[1]),
-      axios.get('https://travel-advisor.p.rapidapi.com/restaurants/list-by-latlng',optionsArray[2]),
-      axios.get('https://travel-advisor.p.rapidapi.com/restaurants/list-by-latlng',optionsArray[3]),
-      axios.get('https://travel-advisor.p.rapidapi.com/restaurants/list-by-latlng',optionsArray[4])
+      axios.get(apiURL,optionsArray[0]),
+      axios.get(apiURL,optionsArray[1]),
+      axios.get(apiURL,optionsArray[2]),
+      axios.get(apiURL,optionsArray[3]),
+      axios.get(apiURL,optionsArray[4])
     ]
 
     try {
