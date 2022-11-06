@@ -139,7 +139,7 @@ function App() {
     setMarkersList([])
     setDirectionsResponse(null)
     setSearchMarkers([])
-    
+    setEstablishmentElem([])
     originRef.current.value = ''
     destinationRef.current.value = ''
   }
@@ -231,7 +231,12 @@ function App() {
         {listDrawer &&
         <Box h='100vh' w='30%' borderRadius='lg' bgColor='white' shadow='base' zIndex='1'> 
           
-          <Button left='0' zIndex='1' position='absolute' bgColor='light-grey' onClick={() => setlistDrawer(false)}>
+          <Button left='0' zIndex='1' position='absolute' bgColor='light-grey' onClick={() => {
+            setlistDrawer(false);
+            setEstablishmentElem([]);
+            setURL(filterKeys.hotel); 
+            setSearchMarkers([]);
+          }}>
                 x
           </Button>
             <VStack spacing={4} alignContent='space-between'>
