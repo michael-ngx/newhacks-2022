@@ -77,6 +77,7 @@ function App() {
       getPlacesData(coordinatesMaster,URL)
       .then((dataarray) => {
        // console.log(dataarray)
+        setSearchMarkers([])
         setPlaces(dataarray)
         placesToMarkers(dataarray)
         
@@ -135,6 +136,7 @@ function App() {
   function clearRoute() {
     setMarkersList([])
     setDirectionsResponse(null)
+    setSearchMarkers([])
     
     originRef.current.value = ''
     destinationRef.current.value = ''
