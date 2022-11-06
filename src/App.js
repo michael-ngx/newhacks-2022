@@ -63,7 +63,7 @@ function App() {
           lat: leg.steps[j].path[i].lat(),
           lng: leg.steps[j].path[i].lng()
         }
-        //setCoordinatesMaster( (prev) => ([...prev, coords]))
+        setCoordinatesMaster( (prev) => ([...prev, coords]))
         coordinates.push(coords)
         setMarkersList( (prev) => ([...prev, <Marker position={coords}/>]))
         setCircles( (prev) => ([...prev, <Circle center={coords} radius ={8000} 
@@ -113,6 +113,15 @@ function App() {
                 lat: results[i].geometry.location.lat(),
                 lng: results[i].geometry.location.lng()
               }}/>)
+            setSearchMarkers( (prev) => ([...prev, <Marker position={
+              { 
+                lat: results[i].geometry.location.lat(),
+                lng: results[i].geometry.location.lng()
+              }}
+              icon= {{
+                url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+          }}/>]))
+            
             
           }
         }
@@ -152,7 +161,7 @@ function App() {
           {directionsResponse && (
             <DirectionsRenderer directions={directionsResponse} />
           )}
-          <div>{coordinatesMaster}{searchedMarker}</div>
+          <div>{markersList}{searchMarkers}</div>
           {/*add back {circles} after amagalating into one polygon */}
         </GoogleMap>
       </Box>
