@@ -46,27 +46,23 @@ function App() {
   if(firstUpdate.current) {
       firstUpdate.current = false;
       return;
-    }
-      for(var i = 0; i < coordinatesMaster.length; i++){
-        getPlacesData(coordinatesMaster[i])
-      .then((data) => {
-        console.log(data)
-        setPlaces(data)
-      })
-    
-    }
+  }
+    getPlacesData(coordinatesMaster)
+    .then((dataarray) => {
+      console.log(dataarray)
+      // setPlaces(dataarray)
+    })
   }, [coordinatesMaster])
 
   //this one is with just one
-  /*useEffect(() => { 
+  // useEffect(() => {
+  //     getPlacesData(coordinatesMaster[0])
+  //     .then((data) => {
+  //       console.log(data)
+  //       setPlaces(data)
+  //     })
     
-      getPlacesData(coordinatesMaster[0])
-      .then((data) => {
-        console.log(data)
-        setPlaces(data)
-      })
-    
-  }, [coordinatesMaster])*/
+  // }, [coordinatesMaster])
 
   /** @type React.MutableRefObject<HTMLInputElement> */
   const originRef = useRef()
@@ -98,8 +94,8 @@ function App() {
     const leg = results.routes[0].legs[0]
     const coordinates = []
     for(let j = 0; j < leg.steps.length; j++){
-      if(leg.steps[j].distance.value < 1500) {continue};
-      let target = leg.steps[j].distance.value / 4000
+      if(leg.steps[j].distance.value < 4000) {continue};
+      let target = leg.steps[j].distance.value / 16000
       let skip = Math.ceil(leg.steps[j].path.length / target)
       for(let i = 0; i < leg.steps[j].path.length; i+=skip){
         const coords = { 
