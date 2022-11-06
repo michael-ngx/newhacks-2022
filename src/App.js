@@ -1,7 +1,11 @@
 import { Box, Button, ButtonGroup, Flex, HStack, IconButton, Input, Text } from '@chakra-ui/react'
 import { FaLocationArrow, FaTimes } from 'react-icons/fa'
 import { useJsApiLoader, GoogleMap, Marker, Autocomplete, DirectionsRenderer, Circle } from '@react-google-maps/api'
+
 import { useRef, useState, useEffect } from 'react'
+import Tabs from './components/Tabs';
+import homebg from "./homebg.png";
+import "./imagestyle.css"
 import { getPlacesData } from './api/api.js'
 
 // import List from './components/List.js'
@@ -26,11 +30,12 @@ function App() {
   // Needs directionsRenderer is used to render route between destinations
   const [distance, setDistance] = useState('')
   const [duration, setDuration] = useState('')
+
+  const [menuDrawer, setmenuDrawer] = useState(true)
+  const [listDrawer, setlistDrawer] = useState(false)
   const searchedMarker = []
   
   const [places, setPlaces] = useState([])
-  
-  const [listDrawer, setlistDrawer] = useState(false)
 
   useEffect(() => {
     getPlacesData()
@@ -115,10 +120,13 @@ function App() {
   // *******************************************************************************
 
   return (
+
+    /* <homepage/> */
     <Flex position='absolute' flexDirection='column' h='100vh' w='100vw'>
       {/* ************************************* */}
       {/* Google Map */}
       {/* ************************************* */}
+
       <Box position='absolute' left={0} top={0} h='100%' w='100%'>
         {/* Google Map Box */}
         <GoogleMap
@@ -141,12 +149,37 @@ function App() {
           {/*add back {circles} after amagalating into one polygon */}
         </GoogleMap>
       </Box>
+
+      <div id="home">
       
+      {menuDrawer &&
+        <Box height='100vh' width='100vw'  left="0" top = "0" display='block' bgColor="white" position='absolute' shadow='base' zIndex='2'> 
+          <img className="homeimage" src={homebg}></img>
+          <div>
+            <Box m={4} id="homebox" height='240' width='40%'  left="30%" top = "20%" display='block' bgColor="#D8C9B6" position='absolute' shadow='base' zIndex='5'>
+              <br></br>
+              <h1 className="homeheader">What's In Between?</h1>
+              <p className="homepara"> Route from A to B and discover what's in between! Locating restaurants, hotels, gas stations, and attractions made easy. </p>
+            </Box>
+          </div>
+          
+          <Button id="startbutton" left='42%' top='55vh' width="6cm" height="1.5cm" zIndex='3' position='absolute' onClick={() => setmenuDrawer(false)}>
+              Start my trip
+          
+          </Button>
+        </Box>}
+
+        {/* <Button onClick={() => setlistDrawer(true)}>
+          Test Open
+        </Button> */}
+      </div>
+
       <HStack justify='space-between' align='flex-start'>
         {/* ************************************* */}
         {/* Places List View */}
         {/* ************************************* */}
         {/* Opens the Drawer when pressed the button */}
+
         {listDrawer &&
         <Box h='100vh' w='30%' p={5} borderRadius='lg' bgColor='white' shadow='base' zIndex='1'> 
           
