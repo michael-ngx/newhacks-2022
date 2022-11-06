@@ -1,8 +1,9 @@
-import { Box, Button, ButtonGroup, Flex, HStack, IconButton, Input } from '@chakra-ui/react'
+import { Box, Button, ButtonGroup, Flex, HStack, IconButton, Input, VStack } from '@chakra-ui/react'
 import { FaLocationArrow, FaTimes } from 'react-icons/fa'
 import { useJsApiLoader, GoogleMap, Marker, Autocomplete, DirectionsRenderer, Circle } from '@react-google-maps/api'
 
 import { useRef, useState, useEffect } from 'react'
+import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react'
 import homebg from "./homebg.png";
 import "./imagestyle.css"
 import { getPlacesData } from './api/api.js'
@@ -143,7 +144,9 @@ function App() {
       </Box>
 
       <div id="home">
-      
+      {/* ************************************* */}
+      {/* Menu View */}
+      {/* ************************************* */}
       {menuDrawer &&
         <Box height='100vh' width='100vw'  left="0" top = "0" display='block' bgColor="white" position='absolute' shadow='base' zIndex='2'> 
           <img className="homeimage" src={homebg}></img>
@@ -157,29 +160,48 @@ function App() {
           
           <Button id="startbutton" left='42%' top='55vh' width="6cm" height="1.5cm" zIndex='3' position='absolute' onClick={() => setmenuDrawer(false)}>
               Start my trip
-          
           </Button>
         </Box>}
 
-        {/* <Button onClick={() => setlistDrawer(true)}>
-          Test Open
-        </Button> */}
       </div>
 
       <HStack justify='space-between' align='flex-start'>
         {/* ************************************* */}
         {/* Places List View */}
         {/* ************************************* */}
-        {/* Opens the Drawer when pressed the button */}
-
         {listDrawer &&
         <Box h='100vh' w='30%' p={5} borderRadius='lg' bgColor='white' shadow='base' zIndex='1'> 
-          
-          <h1>List</h1>
-
-          <Button onClick={() => setlistDrawer(false)}>
-              Test Close
+          <Button left="0" zIndex='1' position='absolute' onClick={() => setlistDrawer(false)}>
+                x
           </Button>
+            <VStack spacing={4} alignContent='space-between'>
+              <Box><br/><b>What are you looking for?</b></Box>
+              <Tabs isLazy variant='soft-rounded' colorScheme='green'>
+                  <TabList>
+                      <Tab>Restaurants</Tab>
+                      {/* <img src={foodpic} width="30" height="30"/> */}
+                      <Tab>Attractions</Tab>
+                      <Tab>Hotels</Tab>
+                  </TabList>
+                  <TabPanels>
+                      <TabPanel> 
+                        {/* {/ use a for loop to input place id and generate boxes accrodingly https://developers.google.com/maps/documentation/javascript/examples/place-details /}
+                        {/ var place_id=--inser place id--"ChIJMT5wCMw0K4gRnURiAF8kyLE" /}
+                        {/ for(let j = 0; j < 5; j++){ */}
+                        <Box>
+                          <a href={'https://www.google.com/maps/search/?api=1&query=Google&query_place_id=ChIJMT5wCMw0K4gRnURiAF8kyLE'} target="_blank"> RESTAURANT NAME</a>
+                          <p>rating </p>
+                          <br/>
+                          <a href={'https://www.google.com/maps/search/?api=1&query=Google&query_place_id=ChIJMT5wCMw0K4gRnURiAF8kyLE'} target="_blank"> RESTAURANT NAME</a>
+                          <p>rating </p>
+                          <br/>
+                        </Box>
+                      </TabPanel>
+                      <TabPanel> <p>two!</p> </TabPanel>
+                      <TabPanel> <p>two!</p> </TabPanel>
+                  </TabPanels>
+                  </Tabs>
+            </VStack>
         </Box>}
 
         <Button onClick={() => setlistDrawer(true)}>
