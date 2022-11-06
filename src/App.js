@@ -234,7 +234,6 @@ function App() {
           <Button left='0' zIndex='1' position='absolute' bgColor='light-grey' onClick={() => {
             setlistDrawer(false);
             setEstablishmentElem([]);
-            setURL(filterKeys.hotel); 
             setSearchMarkers([]);
           }}>
                 x
@@ -266,7 +265,10 @@ function App() {
                   </Tabs>
             </VStack>        
             </Box>}
-        <Button bgColor='white' shadow='base' zIndex='1' onClick={() => setlistDrawer(true)}>
+        <Button bgColor='white' shadow='base' zIndex='1' onClick={() => {
+            setlistDrawer(true);
+            setURL(filterKeys.hotel);
+          }}>
           Filter
         </Button>
 
