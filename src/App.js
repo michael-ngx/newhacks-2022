@@ -14,16 +14,25 @@ function App() {
 
   const [map, setMap] = useState(/** @type google.maps.Map */ (null))
   const [directionsResponse, setDirectionsResponse] = useState(null)
+  
+  
+  //ON THE LINE
   const [markersList, setMarkersList] = useState([])
   const [circles, setCircles] = useState([])
   const [coordinatesMaster, setCoordinatesMaster] = useState([])
-  const [searchResults, setSearchResults] = useState([])
-  const [searchMarkers, setSearchMarkers] = useState([])
+
   // Note: directionsResponse is recorded, but not rendered when we execute the calculateRoute().
   // Needs directionsRenderer is used to render route between destinations
+
+  //NOT ON THE LINE
+  const [searchResults, setSearchResults] = useState([])
+  const [searchMarkers, setSearchMarkers] = useState([])
+  const searchedMarker = []
+
+  //deprecate?
   const [distance, setDistance] = useState('')
   const [duration, setDuration] = useState('')
-  const searchedMarker = []
+  
 
   /** @type React.MutableRefObject<HTMLInputElement> */
   const originRef = useRef()
@@ -55,16 +64,18 @@ function App() {
     const leg = results.routes[0].legs[0]
     const coordinates = []
     for(let j = 0; j < leg.steps.length; j++){
-      if(leg.steps[j].distance.value < 1500) {continue};
-      let target = leg.steps[j].distance.value / 4000
+      if(leg.steps[j].distance.value < 3000) {continue};
+      let target = leg.steps[j].distance.value / 8000
       let skip = Math.ceil(leg.steps[j].path.length / target)
       for(let i = 0; i < leg.steps[j].path.length; i+=skip){
         const coords = { 
           lat: leg.steps[j].path[i].lat(),
           lng: leg.steps[j].path[i].lng()
         }
+        // eslint-disable-next-line no-undef
+        const coordsLatLng = new google.maps.LatLng(coords.lat,coords.lng)
         setCoordinatesMaster( (prev) => ([...prev, coords]))
-        coordinates.push(coords)
+        coordinates.push(coordsLatLng)
         setMarkersList( (prev) => ([...prev, <Marker position={coords}/>]))
         setCircles( (prev) => ([...prev, <Circle center={coords} radius ={8000} 
           options={ {strokeOpacity: 0.3, strokeWeight: 1, fillColor: '#FF0000', strokeColor: '#FF0000', fillOpacity: 0.3}}/>]));
@@ -90,29 +101,58 @@ function App() {
   // Find nearby stuff
   // *******************************************************************************
   // *******************************************************************************
-  function searching(coordinates) {
+  async function searching(coordinates) {
     console.log(coordinates)
     const searchResultCoords =[];
     const searchResultMarkers = [];
-    for(let currentCoord of coordinates) {
+
+
+    for(var j = 0; j < coordinates.length; j++) {
+      var currentCoord = coordinates[j]
       var request = {
-        query: 'Gas Station',
-        fields: ['name', 'geometry'],
-        locationBias: {radius: 8000, center: currentCoord}
+        location: currentCoord,
+        radius: '500',
+        type: ['gas_station']
       };
       // eslint-disable-next-line no-undef
       let service = new google.maps.places.PlacesService(map)
       console.log("entered")
-      service.findPlaceFromQuery(request, function(results, status) {
-        if(results !== null){
-          for (var i = 0; i < (results.length); i++) {
-            console.log(results[i].geometry.location)
-            searchResultCoords.push(results[i].geometry.location)
-            searchedMarker.push(<Marker position={
+      
+      const callback = (results, status) => {
+        console.log(results,status)
+        // eslint-disable-next-line no-undef
+        if (status == google.maps.places.PlacesServiceStatus.OK) {
+          for (var i = 0; i < results.length; i++) {
+            console.log("function called")
+            markersList.push(<Marker position={
               { 
                 lat: results[i].geometry.location.lat(),
                 lng: results[i].geometry.location.lng()
-              }}/>)
+              }}
+               icon={{
+                url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+          }}/>)
+          }
+        }
+      }
+      service.nearbySearch(request, callback
+        // console.log(results, status)
+        // // eslint-disable-next-line no-undef
+        // if(status === google.maps.places.PlacesServiceStatus.OK){
+        //   for (var i = 0; i < (results.length); i++) {
+        //     console.log(results.length)
+        //     console.log("i = " + i + " , j = " + j)
+        //     console.log(results[i].geometry.location.lat() + "," + results[i].geometry.location.lng())
+        //     searchResultCoords.push({ 
+        //       lat: results[i].geometry.location.lat(),
+        //       lng: results[i].geometry.location.lng()
+        //     })
+        //     searchedMarker.push(<Marker position={
+        //       { 
+        //         lat: results[i].geometry.location.lat(),
+        //         lng: results[i].geometry.location.lng()
+        //       }}/>)
+            /*
             setSearchMarkers( (prev) => ([...prev, <Marker position={
               { 
                 lat: results[i].geometry.location.lat(),
@@ -120,17 +160,18 @@ function App() {
               }}
               icon= {{
                 url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-          }}/>]))
+          }}/>]))*/
             
             
-          }
-        }
+         // }
+          //console.log(searchResultCoords)
+        //}
     
         
-      })
+      )
+      //setSearchMarkers(searchResultMarkers)
     };
     
-    console.log(searchResultCoords)
   }
   function serachingQueries(){
     //todo: iterate through all the checked off queries
@@ -161,7 +202,7 @@ function App() {
           {directionsResponse && (
             <DirectionsRenderer directions={directionsResponse} />
           )}
-          <div>{markersList}{searchMarkers}</div>
+          <div>{markersList}{searchedMarker}</div>
           {/*add back {circles} after amagalating into one polygon */}
         </GoogleMap>
       </Box>
