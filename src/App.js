@@ -205,17 +205,7 @@ function App() {
         </Box>}
 
       </div>
-      <Box>
-        <Button id='hotel' onClick={() => (
-          setURL(filterKeys.hotel))}
-          >Hotel</Button>
-        <Button id='restaurant' onClick={() => (
-          setURL(filterKeys.restaurant))}
-          >Restaurant</Button>
-        <Button id='attrtaction' onClick={() => (
-          setURL(filterKeys.attraction))}
-          >Attractions</Button>
-        </Box>
+      
       <HStack justify='space-between' align='flex-start'>
         {/* ************************************* */}
         {/* Places List View */}
@@ -230,16 +220,12 @@ function App() {
               <Box><br/><b>What are you looking for?</b></Box>
               <Tabs isLazy variant='soft-rounded' colorScheme='green'>
                   <TabList>
-                      <Tab>Restaurants</Tab>
-                      {/* <img src={foodpic} width="30" height="30"/> */}
-                      <Tab>Attractions</Tab>
-                      <Tab>Hotels</Tab>
+                      <Tab onClick={() => (setURL(filterKeys.hotel))}>Hotels</Tab>
+                      <Tab onClick={() => (setURL(filterKeys.restaurant))}>Restaurants</Tab>
+                      <Tab onClick={() => (setURL(filterKeys.attraction))}>Attractions</Tab>
                   </TabList>
                   <TabPanels>
                       <TabPanel> 
-                        {/* {/ use a for loop to input place id and generate boxes accrodingly https://developers.google.com/maps/documentation/javascript/examples/place-details /}
-                        {/ var place_id=--inser place id--"ChIJMT5wCMw0K4gRnURiAF8kyLE" /}
-                        {/ for(let j = 0; j < 5; j++){ */}
                         <Box>
                           <a href={'https://www.google.com/maps/search/?api=1&query=Google&query_place_id=ChIJMT5wCMw0K4gRnURiAF8kyLE'} target="_blank"> RESTAURANT NAME</a>
                           <p>rating </p>
@@ -294,11 +280,7 @@ function App() {
                 } } />
             </ButtonGroup>
           </HStack>
-          <HStack spacing={4} mt={4} justifyContent='space-between'>
-            {/* Display distance and duration */}
-            {/* <Text>Distance: {distance} </Text>
-    <Text>Duration: {duration} </Text> */}
-          </HStack>
+          
         </Box>
       </HStack>
     </Flex>
