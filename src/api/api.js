@@ -8,7 +8,7 @@ const options = {
         limit: '10',
     },
     headers: {
-        'X-RapidAPI-Key': 'c0f901a9d8mshc7c7497498ab872p179f80jsn92b95a0cb054',
+        'X-RapidAPI-Key': '647a672230msh726502075a2ac50p1637fejsn610f8441d226',
         'X-RapidAPI-Host': 'travel-advisor.p.rapidapi.com'
       }
 };
