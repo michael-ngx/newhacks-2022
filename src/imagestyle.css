@@ -21,3 +21,16 @@
 #startbutton {
     font-size: large ;
 }
+
+#leftSideBarList{
+    display: inline-block;
+    align-items: center;
+}
+
+#leftSideBarList:hover{
+    background-color: #ddd;
+}
+
+#tab-buttons:hover{
+    background-color: #ddd;
+}

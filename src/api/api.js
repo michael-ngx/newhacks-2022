@@ -12,7 +12,7 @@ export async function getPlacesData (coordarray, apiURL){
                 //open_now: true,
             },
             headers: {
-                'X-RapidAPI-Key': '8c3616ee6amsh0073e22fc14cf1dp1ea398jsncfc90b52283a',
+                'X-RapidAPI-Key': '46852c53cbmsh43d46674c4d3680p10f149jsnfefdf441df5c',
                 'X-RapidAPI-Host': 'travel-advisor.p.rapidapi.com'
               }
         }

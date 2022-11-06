@@ -8,7 +8,7 @@ import homebg from "./homebg.png";
 import "./imagestyle.css"
 import { getPlacesData } from './api/api.js'
 
-// import List from './components/List.js'
+<link rel='stylesheet' href='imagestyle.css'/>
 
 // Starting position
 const center = { lat: 43.6607388, lng: -79.3988062 }
@@ -46,9 +46,9 @@ function App() {
     attraction: 'https://travel-advisor.p.rapidapi.com/attractions/list-by-latlng'
   }
   const [URL, setURL] = useState(filterKeys.hotel)
-  const [establishments, setEstablishments] = useState([])
+  var establishments = []
   const [establishmentElem, setEstablishmentElem] = useState([])
-
+  
   const placesToMarkers = (dataarray) => {
     for(let i = 0; i < 5; i++){
       var circle = dataarray[i].data.data //array of place data
@@ -63,10 +63,11 @@ function App() {
        // let marker = <Marker position={coords}/>
         setSearchMarkers( (prev) => ([...prev, coords]))
        // markerArray.push(coords)
-        setEstablishments((prev) => ([...prev, circle[j]]))
+        establishments.push(circle[j]);
       }
 
     }
+    console.log("This is the length of the establishments array: " + establishments.length)
    // console.log(markerArray)
     //setSearchMarkers(markerArray)
   }
@@ -77,12 +78,12 @@ function App() {
     }
       getPlacesData(coordinatesMaster,URL)
       .then((dataarray) => {
+        establishments = []
         setSearchMarkers([])
         setEstablishmentElem([])
         setPlaces(dataarray)
         placesToMarkers(dataarray)
-        console.log(dataarray)
-        showList()
+        showList();
       })
     }, [coordinatesMaster,URL])
 
@@ -144,12 +145,17 @@ function App() {
   }
 
   function showList() {
+    
     for(let x = 0; x < (establishments.length < 10? establishments.length: 10); x++){
       const name = establishments[x].name
-      const rating = establishments[x].rating
+      const rating = establishments[x].rating || "No Rating"
       //console.log(name + " " + rating)
-      setEstablishmentElem((prev) => ([...prev, <div><a>{name}</a><p>{rating}</p><br></br></div>]))
+      console.log(`loop ${x}`)
+      setEstablishmentElem((prev) => ([...prev, <div className='leftSideBarList'><a>{name}</a><p>{rating}</p><br></br></div>]))
     }
+    console.log("exiting showlist")
+    console.log("the establishment number is" + establishments.length)
+    
     //console.log(establishmentElem)
   }
 
@@ -230,29 +236,27 @@ function App() {
           </Button>
             <VStack spacing={4} alignContent='space-between'>
               <Box><br/><b>What are you looking for?</b></Box>
-              <Tabs isLazy variant='soft-rounded' colorScheme='green'>
-                  <TabList>
-                      <Tab onClick={() => (setURL(filterKeys.hotel))}>Hotels</Tab>
-                      <Tab onClick={() => (setURL(filterKeys.restaurant))} >Restaurants</Tab>
-                      <Tab onClick={() => (setURL(filterKeys.attraction))}>Attractions</Tab>
+              <Tabs align='flex-start' isLazy variant='soft-rounded' colorScheme='green' justify='space-between'>
+                  <TabList alignContent='center'>
+                      <Tab className="tab-buttons" onClick={() => (setURL(filterKeys.hotel))}>Hotels</Tab>
+                      <Tab className="tab-buttons" onClick={() => (setURL(filterKeys.restaurant))} >Restaurants</Tab>
+                      <Tab className="tab-buttons" onClick={() => (setURL(filterKeys.attraction))}>Attractions</Tab>
                   </TabList>
                   <TabPanels>
-                      <TabPanel> 
-                        <Box>
-                          {console.log(establishmentElem.length)}
+                      <TabPanel > 
+                        <Box position='absolute' left='1.5%' width='30%' overflow-y='hidden'>
                           {establishmentElem.map((div) => {return ( div )})}
-  
-                          <div><a href={'https://www.google.com/maps/search/?api=1&query=Google&query_place_id=ChIJMT5wCMw0K4gRnURiAF8kyLE'} target="_blank"> RESTAURANT NAME</a>
-                          <p>rating </p>
-                          <br></br></div>
-                          
-                          <a href={'https://www.google.com/maps/search/?api=1&query=Google&query_place_id=ChIJMT5wCMw0K4gRnURiAF8kyLE'} target="_blank"> RESTAURANT NAME</a>
-                          <p>rating </p>
                            
                         </Box>
                       </TabPanel>
-                      <TabPanel> <p>two!</p> </TabPanel>
-                      <TabPanel> <p>two!</p> </TabPanel>
+                      <TabPanel > <Box position='absolute' left='1.5%' width='30%' overflow-y='hidden'>
+                          {establishmentElem.map((div) => {return ( div )})}
+                           
+                        </Box> </TabPanel>
+                      <TabPanel > <Box position='absolute' left='1.5%' width='30%' overflow-y='hidden'>
+                          {establishmentElem.map((div) => {return ( div )})}
+                           
+                        </Box> </TabPanel>
                   </TabPanels>
                   </Tabs>
             </VStack>        
@@ -278,7 +282,8 @@ function App() {
             </Box>
 
             <ButtonGroup>
-              <Button colorScheme='blue' type='submit' onClick={calculateRoute}>
+              <Button colorScheme='blue' type='submit' onClick={() => {calculateRoute()
+                 setlistDrawer(true)}}>
                 Calculate Route
               </Button>
               <IconButton
