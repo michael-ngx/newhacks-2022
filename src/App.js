@@ -15,7 +15,7 @@ const center = { lat: 43.6607388, lng: -79.3988062 }
 
 function App() {
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+    googleMapsApiKey: "AIzaSyCWdGX9E1WSKsgT_YEu-eUD3DqWjhanbac",
     libraries: ['places'],
   })
   
@@ -132,6 +132,7 @@ function App() {
       }
     
     setCoordinatesMaster(coordinates);
+    console.log(coordinates);
   }
 
   // Clear Route when pressed X button
@@ -209,15 +210,14 @@ function App() {
       {menuDrawer &&
         <Box height='100vh' width='100vw'  left="0" top = "0" display='block' bgColor="white" position='absolute' shadow='base' zIndex='2'> 
           <img className="homeimage" src={homebg}></img>
-          <div>
-            <Box m={4} id="homebox" height='240' width='40%'  left="30%" top = "20%" display='block' bgColor="#D8C9B6" position='absolute' shadow='base' zIndex='5'>
+
+            <Box m={4} id="homebox" height='240' width='40%' top = "20%" display='block' bgColor="#D8C9B6" position='absolute' shadow='base' zIndex='5'>
               <br></br>
               <h1 className="homeheader">What's In Between?</h1>
               <p className="homepara"> Route from A to B and discover what's in between! Locating restaurants, hotels, gas stations, and attractions made easy. </p>
             </Box>
-          </div>
           
-          <Button id="startbutton" left='42%' top='55vh' width="6cm" height="1.5cm" zIndex='5' position='absolute' onClick={() => setmenuDrawer(false)}>
+          <Button id="startbutton" top='55vh' zIndex='5' position='absolute' onClick={() => setmenuDrawer(false)}>
               Start my trip
           </Button>
         </Box>}

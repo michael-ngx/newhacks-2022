@@ -20,17 +20,15 @@ export async function getPlacesData (coordarray, apiURL){
     }
 
     //to commit
-    const promiseArray = [
-      axios.get(apiURL,optionsArray[0]),
-      axios.get(apiURL,optionsArray[1]),
-      axios.get(apiURL,optionsArray[2]),
-      axios.get(apiURL,optionsArray[3]),
-      axios.get(apiURL,optionsArray[4])
-    ]
+
+    const promiseArray = optionsArray.map(async (option) => {
+        var a = await axios.get(apiURL, option)
+        return a
+    })
 
     try {
-        const resultArray = await Promise.all(promiseArray)
-        return resultArray
+        console.log(await (promiseArray))
+        return await Promise.all(promiseArray)
     } catch (error) {
         console.log(error)
     }

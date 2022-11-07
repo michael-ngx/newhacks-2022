@@ -17,9 +17,17 @@
 }
 #homebox{
     opacity: 0.7 ;
+    left: 50%;
+    text-align: center;
+    transform: translateX(-50%)
 }
 #startbutton {
     font-size: large ;
+    margin: 0 auto;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 10vw;
+
 }
 
 #leftSideBarList{
