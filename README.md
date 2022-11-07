@@ -36,7 +36,7 @@ npm install
 * This will install all required node modules if they don't exist yet. Then, type
 
 ```
-npm start!
+npm start
 ```
 
 ## Roadmap
