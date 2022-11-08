@@ -5,7 +5,6 @@ url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?"
 
 
 category_list = ["Restauraunt", "Hotel", "Attraction"]
-API_KEY = "AIzaSyCWdGX9E1WSKsgT_YEu-eUD3DqWjhanbac"
 vicinity_radius = "8000"
 
   
