@@ -6,12 +6,13 @@ import { useRef, useState, useEffect } from 'react'
 import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react'
 import homebg from "./homebg.png";
 import "./imagestyle.css"
-import { getPlacesData } from './api/api.js'
+
 
 <link rel='stylesheet' href='imagestyle.css'/>
 
 // Starting position
 const center = { lat: 43.6607388, lng: -79.3988062 }
+const API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY
 
 function App() {
   const { isLoaded } = useJsApiLoader({
@@ -24,70 +25,88 @@ function App() {
   
   
   // ON THE LINE
-  const [markersList, setMarkersList] = useState([])
-  const [circles, setCircles] = useState([])
+  //const [circles, setCircles] = useState([])
   const [coordinatesMaster, setCoordinatesMaster] = useState([])
   // Note: directionsResponse is recorded, but not rendered when we execute the calculateRoute().
   // Needs directionsRenderer is used to render route between destinations
 
   // NOT ON THE LINE
   const [searchMarkers, setSearchMarkers] = useState([])
-  const [places, setPlaces] = useState([])
+  //const [places, setPlaces] = useState([])
   const firstUpdate = useRef(true);
   
   // Drawers for rendering
   const [menuDrawer, setmenuDrawer] = useState(true)
   const [listDrawer, setlistDrawer] = useState(false)
 
-  const [filter, setFilter] = useState('')
-  const filterKeys = {
-    hotel: 'https://travel-advisor.p.rapidapi.com/hotels/list-by-latlng',
-    restaurant: 'https://travel-advisor.p.rapidapi.com/restaurants/list-by-latlng',
-    attraction: 'https://travel-advisor.p.rapidapi.com/attractions/list-by-latlng'
-  }
-  const [URL, setURL] = useState(filterKeys.hotel)
+  
+  const [category, setCategory] = useState('hotel')
+
   var establishments = []
   const [establishmentElem, setEstablishmentElem] = useState([])
   
-  const placesToMarkers = (dataarray) => {
-    for(let i = 0; i < 5; i++){
-      var circle = dataarray[i].data.data //array of place data
-      for(let j = 0; j < circle.length; j++){
-        //console.log(circle[j])
-        if(circle[j].latitude == null) { continue };
-        const coords = {
-          lat: parseFloat(circle[j].latitude),
-          lng: parseFloat(circle[j].longitude)
-        }
-        //console.log(coords)
-       // let marker = <Marker position={coords}/>
-        setSearchMarkers( (prev) => ([...prev, coords]))
-       // markerArray.push(coords)
-        establishments.push(circle[j]);
-      }
 
-    }
-    console.log("This is the length of the establishments array: " + establishments.length)
-   // console.log(markerArray)
-    //setSearchMarkers(markerArray)
-  }
   useEffect(() => { 
     if(firstUpdate.current) {
         firstUpdate.current = false;
         return;
     }
-      getPlacesData(coordinatesMaster,URL)
-      .then((dataarray) => {
-        establishments = []
-        setSearchMarkers([])
-        setEstablishmentElem([])
-        setPlaces(dataarray)
-        placesToMarkers(dataarray)
+      establishments = []
+      setSearchMarkers([])
+      setEstablishmentElem([])
+      fetch('/getLocations',{
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          coordinatesMaster: coordinatesMaster,
+          category: category,
+          API_KEY: API_KEY,
+        })
+      })
+      .then(res => res.json())
+      .then((data) => {
+        //setPlaces(data)
+        placesToMarkers(data)
         showList();
       })
-    }, [coordinatesMaster,URL])
+    }, [coordinatesMaster,category])
 
-    
+    const placesToMarkers = (current_results) => {
+      // for(let i = 0; i < dataarray.length; i++){
+      //   var current_results = dataarray[i] //array of place data
+      //   for(let j = 0; j < current_results.length; j++){
+      //     //console.log(circle[j])
+      //     if(current_results[j][0] == null) { continue };
+      //     const coords = {
+      //       lat: parseFloat(current_results[j][0]),
+      //       lng: parseFloat(current_results[j][1])
+      //     }
+      //     //console.log(coords)
+      //    // let marker = <Marker position={coords}/>
+      //     setSearchMarkers( (prev) => ([...prev, coords]))
+      //    // markerArray.push(coords)
+      //     establishments.push(current_results[j]);
+      //   }
+  
+      // }
+      for(let j = 0; j < current_results.length; j++){
+        //console.log(circle[j])
+        if(current_results[j][0] == null) { continue };
+        const coords = {
+          lat: parseFloat(current_results[j][0]),
+          lng: parseFloat(current_results[j][1])
+        }
+        //console.log(coords)
+       // let marker = <Marker position={coords}/>
+        setSearchMarkers( (prev) => ([...prev, coords]))
+       // markerArray.push(coords)
+        establishments.push(current_results[j]);
+      }
+      //console.log("This is the length of the establishments array: " + establishments.length)
+     // console.log(markerArray)
+      //setSearchMarkers(markerArray)
+    }
+      
   /** @type React.MutableRefObject<HTMLInputElement> */
   const originRef = useRef()
   /** @type React.MutableRefObject<HTMLInputElement> */
@@ -103,8 +122,9 @@ function App() {
     if (originRef.current.value === '' || destinationRef.current.value === '') {
       return
     }
-    setMarkersList([])
+    setEstablishmentElem([])
     setDirectionsResponse(null)
+    setSearchMarkers([])
     // eslint-disable-next-line no-undef
     const directionsService = new google.maps.DirectionsService()
     const results = await directionsService.route({
@@ -115,9 +135,9 @@ function App() {
     })
     setDirectionsResponse(results)
     
-    const leg = results.routes[0].legs[0]
+    //const leg = results.routes[0].legs[0]
     const coordinates = []
-    for(let i = 0; i < results.routes[0].overview_path.length; i+=Math.ceil(results.routes[0].overview_path.length/5)){
+    for(let i = 0; i < results.routes[0].overview_path.length; i+=5){
        
       const coords = { 
           lat: results.routes[0].overview_path[i].lat(),
@@ -126,18 +146,16 @@ function App() {
         //console.log(coords)
         //setCoordinatesMaster( (prev) => ([...prev, coords]))
         coordinates.push(coords)
-        setMarkersList( (prev) => ([...prev, <Marker position={coords}/>]))
-        setCircles( (prev) => ([...prev, <Circle center={coords} radius ={8000} 
-        options={ {strokeOpacity: 0.3, strokeWeight: 1, fillColor: '#FF0000', strokeColor: '#FF0000', fillOpacity: 0.3}}/>]));
+        // setCircles( (prev) => ([...prev, <Circle center={coords} radius ={8000} 
+        // options={ {strokeOpacity: 0.3, strokeWeight: 1, fillColor: '#FF0000', strokeColor: '#FF0000', fillOpacity: 0.3}}/>]));
       }
     
     setCoordinatesMaster(coordinates);
-    console.log(coordinates);
+    //console.log(coordinates);
   }
 
   // Clear Route when pressed X button
   function clearRoute() {
-    setMarkersList([])
     setDirectionsResponse(null)
     setSearchMarkers([])
     setEstablishmentElem([])
@@ -148,14 +166,14 @@ function App() {
   function showList() {
     
     for(let x = 0; x < (establishments.length < 10? establishments.length: 10); x++){
-      const name = establishments[x].name
-      const rating = establishments[x].rating || "No Rating"
+      const name = establishments[x][2]
+      const rating = establishments[x][3] || "No Rating"
       //console.log(name + " " + rating)
-      console.log(`loop ${x}`)
+      //console.log(`loop ${x}`)
       setEstablishmentElem((prev) => ([...prev, <div className='leftSideBarList'><a>{name}</a><p>{rating}</p><br></br></div>]))
     }
-    console.log("exiting showlist")
-    console.log("the establishment number is" + establishments.length)
+    //console.log("exiting showlist")
+    //console.log("the establishment number is" + establishments.length)
     
     //console.log(establishmentElem)
   }
@@ -242,9 +260,9 @@ function App() {
               <Box><br/><b>What are you looking for?</b></Box>
               <Tabs align='flex-start' isLazy variant='soft-rounded' colorScheme='green' justify='space-between'>
                   <TabList alignContent='center'>
-                      <Tab className="tab-buttons" onClick={() => {setEstablishmentElem([])(setURL(filterKeys.hotel))}}>Hotels</Tab>
-                      <Tab className="tab-buttons" onClick={() => {setEstablishmentElem([])(setURL(filterKeys.restaurant))}} >Restaurants</Tab>
-                      <Tab className="tab-buttons" onClick={() => {setEstablishmentElem([])(setURL(filterKeys.attraction))}}>Attractions</Tab>
+                      <Tab className="tab-buttons" onClick={() => {(setCategory("hotels"))}}>Hotels</Tab>
+                      <Tab className="tab-buttons" onClick={() => {(setCategory("restaurants"))}} >Restaurants</Tab>
+                      <Tab className="tab-buttons" onClick={() => {(setCategory("attractions"))}}>Attractions</Tab>
                       
                   </TabList>
                   <Spinner position='absolute' left='13%' top='30%' hidden={establishmentElem.length !== 0}/>
@@ -269,7 +287,7 @@ function App() {
             </Box>}
         <Button bgColor='white' shadow='base' zIndex='1' onClick={() => {
             setlistDrawer(true);
-            setURL(filterKeys.hotel);
+            setCategory('hotels');
           }}>
           Filter
         </Button>
@@ -316,4 +334,4 @@ function App() {
   )
 }
   
-export default App
+export default App;
